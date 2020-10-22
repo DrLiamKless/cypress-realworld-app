@@ -67,7 +67,7 @@ import {
 import { DbSchema } from "../src/models/db-schema";
 import { query } from "express-validator";
 import { Group, GroupResponseItem } from "models/group"; // export model group TODO: why not working in importing above?
-import { GroupMember } from "models/groupmember"
+import { GroupMember } from "models/groupmember";
 
 export type TDatabase = {
   users: User[];
@@ -332,14 +332,17 @@ const saveBankTransfer = (bankTransfer: BankTransfer): BankTransfer => {
 // Group-member
 export const getGroupMemberBy = (key: string, value: any) => getBy(GROUP_MEMBER_TABLE, key, value);
 
-export const getGroupMembersBy = (key: string, value: any) => getAllBy(GROUP_MEMBER_TABLE, key, value);
+export const getGroupMembersBy = (key: string, value: any) =>
+  getAllBy(GROUP_MEMBER_TABLE, key, value);
 
-export const getGroupMembersByGroupName = (groupName: string) => 
+export const getGroupMembersByGroupName = (groupName: string) =>
   flow(getGroupByGroupName, getGroupId, getGroupMembersByGroupId)(groupName);
 
-export const getGroupMembersByGroupId = (groupId: string): GroupMember[] => getGroupMembersBy("groupId",groupId)
+export const getGroupMembersByGroupId = (groupId: string): GroupMember[] =>
+  getGroupMembersBy("groupId", groupId);
 
-export const getGroupMembersByUserId = (userId: string): GroupMember[] => getGroupMembersBy("userId",userId)
+export const getGroupMembersByUserId = (userId: string): GroupMember[] =>
+  getGroupMembersBy("userId", userId);
 
 // Group
 export const getGroupId = (group: Group): string => group.id;
@@ -350,27 +353,22 @@ export const getGroupByGroupName = (groupName: string) => getGroupBy("groupName"
 
 export const getGroupById = (id: string) => getGroupBy("id", id);
 
-export const getGroupByIdForApi = (id: string) => 
-  formatGroupForApiResponse(getGroupBy("id", id));
+export const getGroupByIdForApi = (id: string) => formatGroupForApiResponse(getGroupBy("id", id));
 
-export const formatGroupForApiResponse = (
-  group: Group
-  ): GroupResponseItem => {
-    const creator = getUserById(group.creatorId);
-    
-    const creatorName = getFullNameForUser(group.creatorId);
-    const members = getGroupMembersUserIdsForGroup(group.id)
-    
-    return {
-      creatorName,
-      members,
-      ...group,
-    };
+export const formatGroupForApiResponse = (group: Group): GroupResponseItem => {
+  const creator = getUserById(group.creatorId);
+
+  const creatorName = getFullNameForUser(group.creatorId);
+  const members = getGroupMembersUserIdsForGroup(group.id);
+
+  return {
+    creatorName,
+    members,
+    ...group,
   };
+};
 
-export const formatGroupsForApiResponse = (
-  groups: Group[]
-): GroupResponseItem[] =>
+export const formatGroupsForApiResponse = (groups: Group[]): GroupResponseItem[] =>
   orderBy(
     [(group: Group) => new Date(group.modifiedAt)],
     ["desc"],
@@ -384,16 +382,16 @@ export const getGroupMembersIdsForUser = (userId: string): GroupMember["id"][] =
   flow(getGroupMembersByUserId, map("id"))(userId);
 
 export const getGroupsForUser = (userId: string): Group[] =>
-uniqBy(
-  "id",
-  flatMap(
-    (groupMemberId) => getGroupBy("id",getGroupMemberBy("id", groupMemberId)["groupId"]),
-    getGroupMembersIdsForUser(userId)
-  )
-);
+  uniqBy(
+    "id",
+    flatMap(
+      (groupMemberId) => getGroupBy("id", getGroupMemberBy("id", groupMemberId)["groupId"]),
+      getGroupMembersIdsForUser(userId)
+    )
+  );
 
 export const getGroupsForUserForApi = (userId: string): GroupResponseItem[] =>
-    flow(getGroupsForUser, formatGroupsForApiResponse)(userId)
+  flow(getGroupsForUser, formatGroupsForApiResponse)(userId);
 
 // Transaction
 
@@ -500,7 +498,7 @@ export const transactionsWithinDateRange = curry(
   }
 );
 
-export const getTransactionsForUserByObj = curry( (userId: string, query?: object) =>
+export const getTransactionsForUserByObj = curry((userId: string, query?: object) =>
   flow(getAllTransactionsForUserByObj(userId), uniqBy("id"))(query)
 );
 
@@ -666,6 +664,27 @@ export const updateTransactionById = (transactionId: string, edits: Partial<Tran
   }
 
   db.get(TRANSACTION_TABLE).find(transaction).assign(edits).write();
+};
+
+//Our module for group transactions
+export const getTransactionsByGroupId = (groupId: string): any[] => {
+  // const allGroupUsersId = getGroupMembersUserIdsForGroup(groupId);
+  // const transactions = allGroupUsersId.map((id) => getTransactionsByUserId(id));
+  // return transactions;
+
+  return flow(
+    getGroupMembersUserIdsForGroup,
+    map((id) =>
+      flatMap(getTransactionsByObj)([
+        {
+          receiverId: id,
+        },
+        {
+          senderId: id,
+        },
+      ])
+    )
+  )(groupId);
 };
 
 // Likes

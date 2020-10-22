@@ -10,6 +10,7 @@ import {
   getTransactionByIdForApi,
   getTransactionsForUserForApi,
   getPublicTransactionsByQuery,
+  getTransactionsByGroupId, // a module we added to get all transactions for specific group
 } from "./database";
 import { ensureAuthenticated, validateMiddleware } from "./helpers";
 import {
@@ -155,8 +156,8 @@ router.post(
 //GET /transactions/:transactionId - scoped-user
 router.get(
   "/:transactionId",
-  ensureAuthenticated,
-  validateMiddleware([shortIdValidation("transactionId")]),
+  // ensureAuthenticated,
+  // validateMiddleware([shortIdValidation("transactionId")]),
   (req, res) => {
     const { transactionId } = req.params;
 
@@ -164,6 +165,21 @@ router.get(
 
     res.status(200);
     res.json({ transaction });
+  }
+);
+
+//GET /transaction/group/:groupId
+router.get(
+  "/groups/:groupId",
+  //enter validation
+  //enter auth
+  (req, res) => {
+    const { groupId } = req.params;
+
+    const transactions = getTransactionsByGroupId(groupId); // TODO implement this funnc
+
+    res.status(200);
+    res.json({ transactions });
   }
 );
 
