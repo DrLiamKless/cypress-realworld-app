@@ -9,6 +9,7 @@ import NotificationsContainer from "./NotificationsContainer";
 import BankAccountsContainer from "./BankAccountsContainer";
 import TransactionCreateContainer from "./TransactionCreateContainer";
 import TransactionDetailContainer from "./TransactionDetailContainer";
+import AllGroupsContainer from "./AllGroupsContainer";
 import { DataContext, DataSchema, DataEvents } from "../machines/dataMachine";
 import { AuthMachineContext, AuthMachineEvents } from "../machines/authMachine";
 import { SnackbarContext, SnackbarSchema, SnackbarEvents } from "../machines/snackbarMachine";
@@ -45,6 +46,10 @@ const PrivateRoutesContainer: React.FC<Props> = ({
       <Switch>
         <PrivateRoute isLoggedIn={isLoggedIn} exact path={"/(public|contacts|personal)?"}>
           <TransactionsContainer />
+        </PrivateRoute>
+        {/* Our new all groups route */}
+        <PrivateRoute isLoggedIn={isLoggedIn} exact path={"/groups"}>
+          <AllGroupsContainer />
         </PrivateRoute>
         <PrivateRoute isLoggedIn={isLoggedIn} exact path="/user/settings">
           <UserSettingsContainer authService={authService} />

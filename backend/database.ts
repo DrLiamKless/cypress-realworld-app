@@ -52,7 +52,7 @@ import {
   GroupDetails,
   GroupMember,
   GroupMemberDetails,
-  PremissionsLevel
+  PremissionsLevel,
 } from "../src/models";
 import Fuse from "fuse.js";
 import {
@@ -73,6 +73,7 @@ import {
 } from "../src/utils/transactionUtils";
 import { DbSchema } from "../src/models/db-schema";
 import { query } from "express-validator";
+import { flatten } from "lodash";
 
 export type TDatabase = {
   users: User[];
@@ -432,10 +433,7 @@ const saveGroup = (group: Group): Group => {
   return getGroupBy("id", group.id);
 };
 
-export const createGroup = (
-  creatorId: User["id"],
-  groupDetails: GroupDetails,
-): Group => {
+export const createGroup = (creatorId: User["id"], groupDetails: GroupDetails): Group => {
   const group: Group = {
     id: shortid(),
     uuid: v4(),
@@ -446,9 +444,9 @@ export const createGroup = (
     modifiedAt: new Date(),
   };
 
-  createGroupMember (group.id ,creatorId, {
+  createGroupMember(group.id, creatorId, {
     premmisions: PremissionsLevel.admin,
-  })
+  });
 
   const savedGroup = saveGroup(group);
 
@@ -745,7 +743,8 @@ export const getTransactionsByGroupId = (groupId: string): any[] => {
           senderId: id,
         },
       ])
-    )
+    ),
+    flatten
   )(groupId);
 };
 

@@ -138,7 +138,8 @@ const NavBar: React.FC<NavBarProps> = ({ drawerOpen, toggleDrawer, notifications
           </Badge>
         </IconButton>
       </Toolbar>
-      {(match.pathname === "/" || RegExp("/(?:public|contacts|personal)").test(match.pathname)) && (
+      {(match.pathname === "/" ||
+        RegExp("/(?:public|contacts|personal|groups)").test(match.pathname)) && ( //Added a groups label
         <TransactionNavTabs />
       )}
     </AppBar>
