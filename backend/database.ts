@@ -359,7 +359,7 @@ export const formatGroupForApiResponse = (
     const creator = getUserById(group.creatorId);
     
     const creatorName = getFullNameForUser(group.creatorId);
-    const members = getGroupMembersIdsForGroup(group.id)
+    const members = getGroupMembersUserIdsForGroup(group.id)
     
     return {
       creatorName,
@@ -377,11 +377,11 @@ export const formatGroupsForApiResponse = (
     groups.map((group) => formatGroupForApiResponse(group))
   );
 
-export const getGroupMembersIdsForGroup = (groupId: string): GroupMember["id"][] =>
-flow(getGroupMembersByGroupId, map("groupId"))(groupId);
+export const getGroupMembersUserIdsForGroup = (groupId: string): GroupMember["id"][] =>
+  flow(getGroupMembersByGroupId, map("userId"))(groupId);
 
 export const getGroupMembersIdsForUser = (userId: string): GroupMember["id"][] =>
-flow(getGroupMembersByUserId, map("id"))(userId);
+  flow(getGroupMembersByUserId, map("id"))(userId);
 
 export const getGroupsForUser = (userId: string): Group[] =>
 uniqBy(
