@@ -68,6 +68,7 @@ import { DbSchema } from "../src/models/db-schema";
 import { query } from "express-validator";
 import { Group, GroupResponseItem } from "models/group"; // export model group TODO: why not working in importing above?
 import { GroupMember } from "models/groupmember";
+import { flatten } from "lodash";
 
 export type TDatabase = {
   users: User[];
@@ -683,7 +684,8 @@ export const getTransactionsByGroupId = (groupId: string): any[] => {
           senderId: id,
         },
       ])
-    )
+    ),
+    flatten
   )(groupId);
 };
 

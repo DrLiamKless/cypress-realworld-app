@@ -39,6 +39,7 @@ router.get(
   (req, res) => {
     /* istanbul ignore next */
     const transactions = getTransactionsForUserForApi(req.user?.id!, req.query);
+    console.log(req);
 
     const { totalPages, data: paginatedItems } = getPaginatedItems(
       req.query.page,
