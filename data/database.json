@@ -11024,22 +11024,5 @@
       "createdAt": "2019-10-10T05:09:21.517Z",
       "modifiedAt": "2019-10-10T05:09:21.517Z"
     },
-    {
-      "id": "M0ShNCOqcq",
-      "uuid": "09abcc56-384f-4d6d-aac2-508ecee79b6e",
-      "userId": "24VniajY1y",
-      "groupId": "7lNjnDayj",
-      "premmisions": "admin",
-      "createdAt": "2020-10-22T10:13:46.014Z",
-      "modifiedAt": "2020-10-22T10:13:46.014Z"
-    },
-    {
-      "id": "I1jsZc7fX",
-      "uuid": "dd3de9ba-582f-4154-8f6e-f52d5a0db1d3",
-      "userId": "t45AiwidW",
-      "groupId": "7lNjnDayj",
-      "createdAt": "2020-10-22T10:37:10.702Z",
-      "modifiedAt": "2020-10-22T10:37:10.702Z"
-    }
   ]
 }
