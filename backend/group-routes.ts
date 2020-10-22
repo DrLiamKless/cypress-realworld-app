@@ -11,8 +11,8 @@ import {
   getTransactionsForUserForApi,
   getPublicTransactionsByQuery,
   getGroupsForUserForApi,
-  createGroup,
-  createGroupMember,
+  // createGroup,
+  // createGroupMember,
 } from "./database";
 import { ensureAuthenticated, validateMiddleware } from "./helpers";
 import {
@@ -156,14 +156,14 @@ router.post(
 
     /* istanbul ignore next */
     // const group = createGroup(req.user?.id!, groupDetails); //TODO: update request to work with req.user?.id!
-    const groupMember = createGroupMember(
-      req.params.groupId,
-      req.params.userId,
-      groupMemberDetails
-    );
+    //   const groupMember = createGroupMember(
+    //     req.params.groupId,
+    //     req.params.userId,
+    //     groupMemberDetails
+    //   );
 
-    res.status(200);
-    res.json({ transaction });
+    //   res.status(200);
+    //   res.json({ transaction });
   }
 );
 
