@@ -11,6 +11,8 @@ import {
   getTransactionsForUserForApi,
   getPublicTransactionsByQuery,
   getGroupsForUserForApi,
+  createGroup,
+  createGroupMember
 } from "./database";
 import { ensureAuthenticated, validateMiddleware } from "./helpers";
 import {
@@ -61,97 +63,37 @@ router.get(
   }
 );
 
-//GET /transactions/contacts - scoped user, auth-required
-router.get(
-  "/contacts",
-  ensureAuthenticated,
-  validateMiddleware([
-    sanitizeTransactionStatus,
-    sanitizeRequestStatus,
-    ...isTransactionQSValidator,
-  ]),
-  (req, res) => {
-    /* istanbul ignore next */
-    const transactions = getTransactionsForUserContacts(req.user?.id!, req.query);
-
-    const { totalPages, data: paginatedItems } = getPaginatedItems(
-      req.query.page,
-      req.query.limit,
-      transactions
-    );
-
-    res.status(200);
-    res.json({
-      pageData: {
-        page: res.locals.paginate.page,
-        limit: res.locals.paginate.limit,
-        hasNextPages: res.locals.paginate.hasNextPages(totalPages),
-        totalPages,
-      },
-      results: paginatedItems,
-    });
-  }
-);
-
-//GET /transactions/public - auth-required
-router.get(
-  "/public",
-  ensureAuthenticated,
-  validateMiddleware(isTransactionPublicQSValidator),
-  (req, res) => {
-    const isFirstPage = req.query.page === 1;
-
-    /* istanbul ignore next */
-    let transactions = !isEmpty(req.query)
-      ? getPublicTransactionsByQuery(req.user?.id!, req.query)
-      : /* istanbul ignore next */
-        getPublicTransactionsDefaultSort(req.user?.id!);
-
-    const { contactsTransactions, publicTransactions } = transactions;
-
-    let publicTransactionsWithContacts;
-
-    if (isFirstPage) {
-      const firstFiveContacts = slice(0, 5, contactsTransactions);
-
-      publicTransactionsWithContacts = concat(firstFiveContacts, publicTransactions);
-    }
-
-    const { totalPages, data: paginatedItems } = getPaginatedItems(
-      req.query.page,
-      req.query.limit,
-      isFirstPage ? publicTransactionsWithContacts : publicTransactions
-    );
-
-    res.status(200);
-    res.json({
-      pageData: {
-        page: res.locals.paginate.page,
-        limit: res.locals.paginate.limit,
-        hasNextPages: res.locals.paginate.hasNextPages(totalPages),
-        totalPages,
-      },
-      results: paginatedItems,
-    });
-  }
-);
-
-//POST /transactions - scoped-user
+//POST /groups - scoped-user
 router.post(
-  "/",
-  ensureAuthenticated,
-  validateMiddleware(isTransactionPayloadValidator),
+  "/creatorId/:id",
+  // ensureAuthenticated,
+  // validateMiddleware(isTransactionPayloadValidator),
   (req, res) => {
-    const transactionPayload = req.body;
-    const transactionType = transactionPayload.transactionType;
-
-    remove("transactionType", transactionPayload);
+    const groupDetails = req.body;
 
     /* istanbul ignore next */
-    const transaction = createTransaction(req.user?.id!, transactionType, transactionPayload);
+    // const group = createGroup(req.user?.id!, groupDetails); //TODO: update request to work with req.user?.id!
+    const group = createGroup(req.params.id, groupDetails);
 
     res.status(200);
-    res.json({ transaction });
+    res.json({ group });
+  }
+);
+
+//POST /group-member - scoped-user
+router.post(
+  "/group/:groupId/groupMember/:userId",
+  // ensureAuthenticated,
+  // validateMiddleware(isTransactionPayloadValidator),
+  (req, res) => {
+    const groupMemberDetails = req.body;
+
+    /* istanbul ignore next */
+    // const group = createGroup(req.user?.id!, groupDetails); //TODO: update request to work with req.user?.id!
+    const groupMember = createGroupMember(req.params.groupId ,req.params.userId, groupMemberDetails);
+
+    res.status(200);
+    res.json({ groupMember });
   }
 );
 

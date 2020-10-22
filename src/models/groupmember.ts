@@ -5,7 +5,6 @@ export enum PremissionsLevel {
     admin= "admin",
     member="member"
 }
-  
 
 export interface GroupMember {
     id: string;
@@ -16,3 +15,5 @@ export interface GroupMember {
     createdAt: Date;
     modifiedAt: Date;
 }
+
+export type GroupMemberDetails = Omit<GroupMember, "id" | "uuid" | "createdAt" | "modifiedAt" | "userId" | "groupId">

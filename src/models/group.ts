@@ -14,6 +14,8 @@ export interface GroupResponseItem extends Group {
     creatorName: string;
 }
 
+export type GroupDetails = Omit<Group, "id" | "creatorId" | "uuid" | "createdAt" | "modifiedAt">
+
 // *to-add - total amount,
 
 
