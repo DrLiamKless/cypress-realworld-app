@@ -359,8 +359,9 @@ export const getGroupByIdForApi = (id: string) => formatGroupForApiResponse(getG
 export const formatGroupForApiResponse = (group: Group): GroupResponseItem => {
   const creator = getUserById(group.creatorId);
 
-  const creatorName = getFullNameForUser(group.creatorId);
-  const members = getGroupMembersUserIdsForGroup(group.id);
+  const creatorName: string = getFullNameForUser(group.creatorId);
+  // const members = getGroupMembersUserIdsForGroup(group.id);
+  const members: string[][] = getGroupMembersDetailsForGroup(group.id); // Get array of user details (right now only id,username)
 
   return {
     creatorName,
@@ -376,11 +377,25 @@ export const formatGroupsForApiResponse = (groups: Group[]): GroupResponseItem[]
     groups.map((group) => formatGroupForApiResponse(group))
   );
 
+export const getGroupMembersDetailsForGroup = (groupId: string): string[][] =>
+  flow(
+    getGroupMembersByGroupId,
+    map("userId"),
+    map(getUserById),
+    map((user) => [user.id, user.username])
+  )(groupId);
+
 export const getGroupMembersUserIdsForGroup = (groupId: string): GroupMember["id"][] =>
   flow(getGroupMembersByGroupId, map("userId"))(groupId);
 
 export const getGroupMembersIdsForUser = (userId: string): GroupMember["id"][] =>
   flow(getGroupMembersByUserId, map("id"))(userId);
+
+export const getGroupMembersUsernamesForUser = (userId: string): User["username"][] =>
+  flow(
+    getGroupMembersByUserId,
+    map((groupMember) => getUserById(groupMember.id))
+  )(userId);
 
 export const getGroupsForUser = (userId: string): Group[] =>
   uniqBy(
@@ -390,6 +405,13 @@ export const getGroupsForUser = (userId: string): Group[] =>
       getGroupMembersIdsForUser(userId)
     )
   );
+// uniqBy(
+//   "id",
+//   flatMap(
+//     (groupMemberId) => getGroupBy("id", getGroupMemberBy("id", groupMemberId)["groupId"]),
+//     getGroupMemberDetailsForGroup
+//   )
+// );
 
 export const getGroupsForUserForApi = (userId: string): GroupResponseItem[] =>
   flow(getGroupsForUser, formatGroupsForApiResponse)(userId);
@@ -668,11 +690,7 @@ export const updateTransactionById = (transactionId: string, edits: Partial<Tran
 };
 
 //Our module for group transactions
-export const getTransactionsByGroupId = (groupId: string): any[] => {
-  // const allGroupUsersId = getGroupMembersUserIdsForGroup(groupId);
-  // const transactions = allGroupUsersId.map((id) => getTransactionsByUserId(id));
-  // return transactions;
-
+export const getTransactionsByGroupId = (groupId: string): Transaction[] => {
   return flow(
     getGroupMembersUserIdsForGroup,
     map((id) =>

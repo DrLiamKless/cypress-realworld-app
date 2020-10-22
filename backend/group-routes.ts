@@ -11,6 +11,8 @@ import {
   getTransactionsForUserForApi,
   getPublicTransactionsByQuery,
   getGroupsForUserForApi,
+  createGroup,
+  createGroupMember,
 } from "./database";
 import { ensureAuthenticated, validateMiddleware } from "./helpers";
 import {
@@ -23,6 +25,7 @@ import {
   isTransactionPublicQSValidator,
 } from "./validators";
 import { getPaginatedItems } from "../src/utils/transactionUtils";
+import { GroupResponseItem } from "models";
 const router = express.Router();
 
 // Routes
@@ -39,7 +42,11 @@ router.get(
   (req, res) => {
     /* istanbul ignore next */
     // const groups = getGroupsForUserForApi(req.user?.id!, req.query); // TODO: change endpoint to work like this with client
-    const groups = getGroupsForUserForApi(req.params.userId);
+    console.log(req.params.id);
+    let groups: GroupResponseItem[] = getGroupsForUserForApi(req.params.userId);
+    console.log(groups);
+    // console.log(groups);
+    // groups = groups.map(group=>{group.members = getGroupMemberDetailsForGroup(group.members)})
 
     // const { totalPages, data: paginatedItems } = getPaginatedItems( //TODO: change endpoint & db to work with query filters
     //   req.query.page,
@@ -56,7 +63,7 @@ router.get(
       //   totalPages,
       // },
       // results: paginatedItems,
-      results: groups
+      results: groups,
     });
   }
 );
@@ -148,7 +155,12 @@ router.post(
     remove("transactionType", transactionPayload);
 
     /* istanbul ignore next */
-    const transaction = createTransaction(req.user?.id!, transactionType, transactionPayload);
+    // const group = createGroup(req.user?.id!, groupDetails); //TODO: update request to work with req.user?.id!
+    const groupMember = createGroupMember(
+      req.params.groupId,
+      req.params.userId,
+      groupMemberDetails
+    );
 
     res.status(200);
     res.json({ transaction });
@@ -161,7 +173,7 @@ router.get(
   // ensureAuthenticated,
   // validateMiddleware([shortIdValidation("transactionId")]),
   (req, res) => {
-    const { groupId }  = req.params; // TODO: when we create front - update to req.user?.id!
+    const { groupId } = req.params; // TODO: when we create front - update to req.user?.id!
 
     const group = getGroupByIdForApi(groupId);
 
