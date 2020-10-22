@@ -46,6 +46,13 @@ import {
   NotificationResponseItem,
   TransactionQueryPayload,
   DefaultPrivacyLevel,
+  // importing our models
+  Group,
+  GroupResponseItem,
+  GroupDetails,
+  GroupMember,
+  GroupMemberDetails,
+  PremissionsLevel
 } from "../src/models";
 import Fuse from "fuse.js";
 import {
@@ -66,8 +73,6 @@ import {
 } from "../src/utils/transactionUtils";
 import { DbSchema } from "../src/models/db-schema";
 import { query } from "express-validator";
-import { Group, GroupResponseItem } from "models/group"; // export model group TODO: why not working in importing above?
-import { GroupMember } from "models/groupmember"
 
 export type TDatabase = {
   users: User[];
@@ -341,6 +346,33 @@ export const getGroupMembersByGroupId = (groupId: string): GroupMember[] => getG
 
 export const getGroupMembersByUserId = (userId: string): GroupMember[] => getGroupMembersBy("userId",userId)
 
+const saveGroupMember = (groupMember: GroupMember): GroupMember => {
+  db.get(GROUP_MEMBER_TABLE).push(groupMember).write();
+
+  // manual lookup after transaction created
+  return getGroupMemberBy("id", groupMember.id);
+};
+
+export const createGroupMember = (
+  groupId: Group["id"],
+  userId: User["id"],
+  groupMemberDetails: GroupMemberDetails
+): GroupMember => {
+  const groupMember: GroupMember = {
+    id: shortid(),
+    uuid: v4(),
+    userId: userId,
+    groupId: groupId,
+    premmisions: groupMemberDetails.premmisions,
+    createdAt: new Date(),
+    modifiedAt: new Date(),
+  };
+
+  const savedGroupMember = saveGroupMember(groupMember);
+
+  return savedGroupMember;
+};
+
 // Group
 export const getGroupId = (group: Group): string => group.id;
 
@@ -394,6 +426,36 @@ uniqBy(
 
 export const getGroupsForUserForApi = (userId: string): GroupResponseItem[] =>
     flow(getGroupsForUser, formatGroupsForApiResponse)(userId)
+
+const saveGroup = (group: Group): Group => {
+  db.get(GROUP_TABLE).push(group).write();
+
+  // manual lookup after transaction created
+  return getGroupBy("id", group.id);
+};
+
+export const createGroup = (
+  creatorId: User["id"],
+  groupDetails: GroupDetails,
+): Group => {
+  const group: Group = {
+    id: shortid(),
+    uuid: v4(),
+    groupName: groupDetails.groupName,
+    creatorId: creatorId,
+    avatar: groupDetails.avatar,
+    createdAt: new Date(),
+    modifiedAt: new Date(),
+  };
+
+  createGroupMember (group.id ,creatorId, {
+    premmisions: PremissionsLevel.admin,
+  })
+
+  const savedGroup = saveGroup(group);
+
+  return savedGroup;
+};
 
 // Transaction
 
