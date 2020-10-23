@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useMachine } from "@xstate/react";
+import { useMachine, useService } from "@xstate/react";
 import { Switch, Route } from "react-router";
-import { TransactionDateRangePayload, TransactionAmountRangePayload } from "../models";
+import { GroupResponseItem } from "../models";
 import TransactionListFilters from "../components/TransactionListFilters";
 import TransactionContactsList from "../components/TransactionContactsList";
 import { transactionFiltersMachine } from "../machines/transactionFiltersMachine";
@@ -10,8 +10,13 @@ import TransactionPersonalList from "../components/TransactionPersonalList";
 import TransactionPublicList from "../components/TransactionPublicList";
 import GroupContainer from '../containers/GroupContainer';
 import styled from "styled-components";
-import Axios from "axios";
-import { group } from "console";
+import axios from "axios";
+import { Interpreter } from "xstate";
+import { AuthMachineContext, AuthMachineEvents } from "../machines/authMachine";
+
+export interface Props {
+  authService: Interpreter<AuthMachineContext, any, AuthMachineEvents, any>;
+}
 
 const exampleGroups = [
   {
@@ -83,18 +88,28 @@ const GroupCardMembers = styled.div`
   font-size: 0.9rem;
 `;
 
-const AllGroupsContainer: React.FC = () => {
+const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
+  const [authState] = useService(authService);
+
   const [currentFilters, sendFilterEvent] = useMachine(transactionFiltersMachine);
   const [allGroups, setAllGroups] = useState([]);
   const [bool, setBool] = useState(false);
+
+  const currentUser = authState?.context?.user;
 
   useEffect(() => {
     fetchGroups();
   }, []);
 
   const fetchGroups: () => Promise<void> = async () => {
-    const { data: groups } = await Axios.get("/groups");
-    setAllGroups(groups);
+    const { data } = await axios({
+      method: 'get',
+      url: `http://localhost:3001/groups/user/${currentUser?.id}`,
+      // data: {user: currentUser}
+    });
+    const allGroups = data.results;
+    console.log(data.results);
+    setAllGroups(allGroups);
   };
 
   const handleGroupCardClick = (groupId: string) => {
@@ -149,19 +164,19 @@ const AllGroupsContainer: React.FC = () => {
         <GroupContainer />
       }
       { !bool && 
-        exampleGroups.map((exGroup) => {
+        allGroups.map((group: GroupResponseItem, i: number) => {
           return (
-            <GroupCard onClick={()=>handleGroupCardClick(exGroup.id)}>
-              <GroupCardImg src={exGroup.avatar} />
+            <GroupCard key={i}>
+              <GroupCardImg src={group.avatar} />
               <GroupCardDetails>
-                <GroupCardTitle>{exGroup.name}</GroupCardTitle>
-                <GroupCardMembers>{exGroup.members.join(", ")}</GroupCardMembers>
+                <GroupCardTitle>{group.groupName}</GroupCardTitle>
+                <GroupCardMembers>{group.members.join(", ")}</GroupCardMembers>
               </GroupCardDetails>
             </GroupCard>
           );
       })
       }
-    
+
     </>
   );
 };
