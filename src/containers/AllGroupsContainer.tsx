@@ -96,6 +96,7 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
       // data: {user: currentUser}
     });
     const allGroups = data.results;
+    console.log(data.results);
     setAllGroups(allGroups);
   };
 
