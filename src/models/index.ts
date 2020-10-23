@@ -8,4 +8,3 @@ export * from "./notification";
 export * from "./banktransfer";
 export * from "./group";
 export * from "./groupmember";
-

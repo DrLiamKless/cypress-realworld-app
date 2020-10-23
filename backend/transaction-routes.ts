@@ -157,8 +157,8 @@ router.post(
 //GET /transactions/:transactionId - scoped-user
 router.get(
   "/:transactionId",
-  // ensureAuthenticated,
-  // validateMiddleware([shortIdValidation("transactionId")]),
+  ensureAuthenticated,
+  validateMiddleware([shortIdValidation("transactionId")]),
   (req, res) => {
     const { transactionId } = req.params;
 
