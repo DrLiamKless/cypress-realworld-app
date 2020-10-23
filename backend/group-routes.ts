@@ -44,7 +44,7 @@ const router = express.Router();
 
 //GET /groups - scoped user, auth-required
 router.get(
-  "/",
+  "/user/:userId",
   // ensureAuthenticated,
   // validateMiddleware([
   //   sanitizeTransactionStatus,
@@ -54,9 +54,8 @@ router.get(
   (req, res) => {
     /* istanbul ignore next */
     // const groups = getGroupsForUserForApi(req.user?.id!, req.query); // TODO: change endpoint to work like this with client
-    console.log(req.user?.id!);
-    const groups: GroupResponseItem[] = getGroupsForUserForApi(req.user?.id!);
-    // console.log(groups);
+    // console.log(req.user?.id!);
+    const groups: GroupResponseItem[] = getGroupsForUserForApi(req.params.userId);
     // groups = groups.map(group=>{group.members = getGroupMemberDetailsForGroup(group.members)})
 
     // const { totalPages, data: paginatedItems } = getPaginatedItems( //TODO: change endpoint & db to work with query filters

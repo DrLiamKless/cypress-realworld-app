@@ -15,6 +15,7 @@ import { AuthMachineContext, AuthMachineEvents } from "../machines/authMachine";
 import { SnackbarContext, SnackbarSchema, SnackbarEvents } from "../machines/snackbarMachine";
 import { useService } from "@xstate/react";
 import UserOnboardingContainer from "./UserOnboardingContainer";
+import GroupContainer from "./GroupContainer";
 
 export interface Props {
   isLoggedIn: boolean;
@@ -49,7 +50,10 @@ const PrivateRoutesContainer: React.FC<Props> = ({
         </PrivateRoute>
         {/* Our new all groups route */}
         <PrivateRoute isLoggedIn={isLoggedIn} exact path={"/groups"}>
-          <AllGroupsContainer />
+          <AllGroupsContainer authService={authService} />
+        </PrivateRoute>
+        <PrivateRoute isLoggedIn={isLoggedIn} exact path={"/groups/:groupId"}>
+          <GroupContainer />
         </PrivateRoute>
         <PrivateRoute isLoggedIn={isLoggedIn} exact path="/user/settings">
           <UserSettingsContainer authService={authService} />
