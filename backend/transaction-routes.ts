@@ -169,7 +169,7 @@ router.get(
   }
 );
 
-//GET /transaction/group/:groupId
+//GET /transactions/groups/:groupId
 router.get(
   "/groups/:groupId",
   //enter validation

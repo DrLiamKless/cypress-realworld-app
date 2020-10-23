@@ -1,20 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useMachine } from "@xstate/react";
-import { Switch, Route } from "react-router";
-import { TransactionDateRangePayload, TransactionAmountRangePayload } from "../models";
-import TransactionListFilters from "../components/TransactionListFilters";
-import TransactionContactsList from "../components/TransactionContactsList";
-import { transactionFiltersMachine } from "../machines/transactionFiltersMachine";
-import { getDateQueryFields, getAmountQueryFields } from "../utils/transactionUtils";
-import TransactionPersonalList from "../components/TransactionPersonalList";
-import TransactionPublicList from "../components/TransactionPublicList";
+import { useParams } from "react-router-dom";
 import TransactionItem from "../components/TransactionItem";
 import { TransactionResponseItem , TransactionStatus , DefaultPrivacyLevel } from "../models";
-import styled from "styled-components";
-import Axios from "axios";
-import { group } from "console";
-import { Translate } from "@material-ui/icons";
-
+import axios from "axios";
 
 const exampleTransactions: TransactionResponseItem[] = [
     {
@@ -86,15 +74,39 @@ const exampleTransactions: TransactionResponseItem[] = [
 ];
 
 const GroupContainer: React.FC = () => {
+
+    const [allTransactions, setAllTransactions] = useState<TransactionResponseItem[]>();
+    const params:{groupId: string} = useParams();
+    const groupId = params.groupId
+
+    useEffect(() => {
+      fetchTransactions();
+    }, []);
+  
+    const fetchTransactions: () => Promise<void> = async () => {
+      const { data } = await axios({
+        method: 'get',
+        url: `http://localhost:3001/transactions/groups/${groupId}`,
+        // data: {user: currentUser}
+      });
+      const transactions:TransactionResponseItem[] = data.transactions;
+      const transactions3 = transactions.slice(0,3); // to make it easier for the server we sliced the r esponse
+      transactions3.forEach(transaction => {
+        transaction.likes = [];
+        transaction.comments = [];
+      });
+      setAllTransactions(transactions3);
+    };
+
     return (
         <div>
-            <div>Group</div>
-            {
-                exampleTransactions.map((exTran) => {
-                    return (
-                        <TransactionItem transaction={exTran} />
-                    )
-                })
+            <div>Group</div>        
+            {allTransactions &&
+                    allTransactions.map((transaction, i) => {
+                        return (
+                            <TransactionItem key={i} transaction={transaction} />
+                            )
+                        })
             }
         </div>
     );

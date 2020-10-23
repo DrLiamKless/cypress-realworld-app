@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useMachine, useService } from "@xstate/react";
-import { Switch, Route } from "react-router";
+import { Link } from "react-router-dom";
 import { GroupResponseItem } from "../models";
-import TransactionListFilters from "../components/TransactionListFilters";
-import TransactionContactsList from "../components/TransactionContactsList";
 import { transactionFiltersMachine } from "../machines/transactionFiltersMachine";
-import { getDateQueryFields, getAmountQueryFields } from "../utils/transactionUtils";
-import TransactionPersonalList from "../components/TransactionPersonalList";
-import TransactionPublicList from "../components/TransactionPublicList";
 import GroupContainer from '../containers/GroupContainer';
 import styled from "styled-components";
 import axios from "axios";
@@ -107,13 +102,12 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
       url: `http://localhost:3001/groups/user/${currentUser?.id}`,
       // data: {user: currentUser}
     });
-    const allGroups = data.results;
-    console.log(data.results);
-    setAllGroups(allGroups);
+    const groups = data.results;
+    setAllGroups(groups);
   };
 
-  const handleGroupCardClick = (groupId: string) => {
-    console.log(groupId);
+  const handleGroupCardClick = () => {
+    // console.log(groupId);
     setBool(!bool);
   };
 
@@ -166,13 +160,15 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
       { !bool && 
         allGroups.map((group: GroupResponseItem, i: number) => {
           return (
-            <GroupCard key={i}>
+            <Link to={`/groups/${group.id}`}>
+            <GroupCard onClick={() => {handleGroupCardClick()}} key={i}>
               <GroupCardImg src={group.avatar} />
               <GroupCardDetails>
                 <GroupCardTitle>{group.groupName}</GroupCardTitle>
-                <GroupCardMembers>{group.members.join(", ")}</GroupCardMembers>
+                <GroupCardMembers>{group.members.join(" , ")}</GroupCardMembers>
               </GroupCardDetails>
             </GroupCard>
+            </Link>
           );
       })
       }
