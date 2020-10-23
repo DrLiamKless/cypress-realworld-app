@@ -46,6 +46,9 @@ import {
   NotificationResponseItem,
   TransactionQueryPayload,
   DefaultPrivacyLevel,
+  GroupMemberDetails,
+  GroupDetails,
+  PremissionsLevel,
 } from "../src/models";
 import Fuse from "fuse.js";
 import {
@@ -69,6 +72,8 @@ import { query } from "express-validator";
 import { Group, GroupResponseItem } from "models/group"; // export model group TODO: why not working in importing above?
 import { GroupMember } from "models/groupmember";
 import { flatten } from "lodash";
+import { Details } from "@material-ui/icons";
+import { id } from "date-fns/locale";
 
 export type TDatabase = {
   users: User[];
@@ -294,7 +299,6 @@ export const removeBankAccountById = (bankAccountId: string) => {
     .assign({ isDeleted: true }) // soft delete
     .write();
 };
-
 // Bank Transfer
 // Note: Balance transfers from/to bank accounts is a future feature,
 // but some of the backend database functionality is already implemented here.
@@ -345,6 +349,45 @@ export const getGroupMembersByGroupId = (groupId: string): GroupMember[] =>
 export const getGroupMembersByUserId = (userId: string): GroupMember[] =>
   getGroupMembersBy("userId", userId);
 
+const saveGroupMember = (groupMember: GroupMember): GroupMember => {
+  db.get(GROUP_MEMBER_TABLE).push(groupMember).write();
+
+  // manual lookup after transaction created
+  return getGroupMemberBy("id", groupMember.id);
+};
+
+//gets a group id and an array of groupMebers details, and adds them to the group.
+//returns an array of the created group members
+export const createGroupMemberInBulk = (
+  groupId: Group["id"],
+  groupMemberUserIds: GroupMemberDetails[]
+): GroupMember[] => {
+  return groupMemberUserIds.map((curUser) => {
+    const groupMember: GroupMember = {
+      id: shortid(),
+      uuid: v4(),
+      userId: curUser.userId,
+      groupId: groupId,
+      premmisions: curUser.premmisions,
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+    };
+
+    const savedGroupMember = saveGroupMember(groupMember);
+    return savedGroupMember;
+  });
+
+  // return savedGroupMember;
+};
+
+//soft delete a group member
+export const removeGroupMemberById = (groupMemberId: string, groupId: string) => {
+  db.get(GROUP_MEMBER_TABLE)
+    .find((gm) => gm.userId === groupMemberId && gm.groupId === groupId)
+    .assign({ isDeleted: true }) // soft delete
+    .write();
+};
+
 // Group
 export const getGroupId = (group: Group): string => group.id;
 
@@ -359,6 +402,8 @@ export const getGroupByIdForApi = (id: string) => formatGroupForApiResponse(getG
 export const formatGroupForApiResponse = (group: Group): GroupResponseItem => {
   const creator = getUserById(group.creatorId);
 
+  //if group deleted return
+  if (group.hasOwnProperty("isDeleted")) return {} as GroupResponseItem;
   const creatorName: string = getFullNameForUser(group.creatorId);
   // const members = getGroupMembersUserIdsForGroup(group.id);
   const members: string[][] = getGroupMembersDetailsForGroup(group.id); // Get array of user details (right now only id,username)
@@ -380,6 +425,7 @@ export const formatGroupsForApiResponse = (groups: Group[]): GroupResponseItem[]
 export const getGroupMembersDetailsForGroup = (groupId: string): string[][] =>
   flow(
     getGroupMembersByGroupId,
+    filter((gm) => !gm.hasOwnProperty("isDeleted")),
     map("userId"),
     map(getUserById),
     map((user) => [user.id, user.username])
@@ -405,16 +451,62 @@ export const getGroupsForUser = (userId: string): Group[] =>
       getGroupMembersIdsForUser(userId)
     )
   );
-// uniqBy(
-//   "id",
-//   flatMap(
-//     (groupMemberId) => getGroupBy("id", getGroupMemberBy("id", groupMemberId)["groupId"]),
-//     getGroupMemberDetailsForGroup
-//   )
-// );
 
 export const getGroupsForUserForApi = (userId: string): GroupResponseItem[] =>
-  flow(getGroupsForUser, formatGroupsForApiResponse)(userId);
+  flow(
+    getGroupsForUser,
+    filter((group) => !group.hasOwnProperty("isDeleted")),
+    formatGroupsForApiResponse
+  )(userId);
+
+const saveGroup = (group: Group): Group => {
+  db.get(GROUP_TABLE).push(group).write();
+
+  // manual lookup after transaction created
+  return getGroupBy("id", group.id);
+};
+
+export const createGroup = (
+  creatorId: User["id"],
+  groupDetails: GroupDetails,
+  groupMembersIds: GroupMemberDetails["userId"][] = []
+): Group => {
+  const group: Group = {
+    id: shortid(),
+    uuid: v4(),
+    groupName: groupDetails.groupName,
+    creatorId: creatorId,
+    avatar: groupDetails.avatar,
+    createdAt: new Date(),
+    modifiedAt: new Date(),
+  };
+
+  //add group admin to begining of groupMembers array
+  groupMembersIds.unshift(creatorId as GroupMemberDetails["userId"]);
+  //create members from array
+  console.log(groupMembersIds);
+  createGroupMemberInBulk(
+    group.id,
+    groupMembersIds.map((id, i) => {
+      return {
+        userId: id,
+        premmisions: i === 0 ? PremissionsLevel.admin : PremissionsLevel.member,
+      };
+    })
+  );
+
+  const savedGroup = saveGroup(group);
+
+  return savedGroup;
+};
+
+// soft delete group
+export const removeGroupById = (groupId: string) => {
+  db.get(GROUP_TABLE)
+    .find((g) => g.id === groupId)
+    .assign({ isDeleted: true }) // soft delete
+    .write();
+};
 
 // Transaction
 
@@ -691,6 +783,7 @@ export const updateTransactionById = (transactionId: string, edits: Partial<Tran
 
 //Our module for group transactions
 export const getTransactionsByGroupId = (groupId: string): Transaction[] => {
+  if (getGroupById(groupId).hasOwnProperty("isDeleted")) return [];
   return flow(
     getGroupMembersUserIdsForGroup,
     map((id) =>

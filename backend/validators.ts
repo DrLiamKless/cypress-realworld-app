@@ -7,6 +7,7 @@ import {
   NotificationsType,
 } from "../src/models";
 import { includes } from "lodash/fp";
+import { string } from "yup";
 
 const TransactionStatusValues = Object.values(TransactionStatus);
 const RequestStatusValues = Object.values(TransactionRequestStatus);
@@ -116,3 +117,13 @@ export const isValidEntityValidator = [
     ])
     .trim(),
 ];
+
+//Our Validators
+
+export const isGroupValidator = [
+  body("groupName").isString().trim(),
+  body("avatar").isString().trim(),
+  body("groupMembersIds").optional().isArray(),
+];
+
+export const isNewGroupMembersValidator = [body("newGroupMembersIds").isArray()];
