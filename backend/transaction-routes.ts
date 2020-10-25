@@ -169,18 +169,28 @@ router.get(
   }
 );
 
+const sliceTransactions = (transactions: any[], index: number) => {
+  let i,
+    chunk = 2;
+  let temparray = [];
+  for (i = 0; i < transactions.length; i += chunk) {
+    temparray.push(transactions.slice(i, i + chunk));
+  }
+  return temparray[index];
+};
+
 //GET /transactions/groups/:groupId
 router.get(
-  "/groups/:groupId",
+  "/groups/:groupId/:index",
   //enter validation
   //enter auth
   (req, res) => {
-    const { groupId } = req.params;
-
+    const { groupId, index } = req.params;
     const transactions = getTransactionsByGroupId(groupId); // TODO implement this funnc
-
+    const currentTransactions = sliceTransactions(transactions, parseInt(index));
+    console.log(currentTransactions);
     res.status(200);
-    res.json({ transactions });
+    res.json({ transactions: currentTransactions });
   }
 );
 

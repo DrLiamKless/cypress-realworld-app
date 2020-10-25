@@ -86,6 +86,7 @@ const GroupContainer: React.FC = () => {
   const [authState] = useService(authService);
   const [groupDetails, setGroupDetails] = useState<GroupResponseItem>();
   const [allTransactions, setAllTransactions] = useState<TransactionResponseItem[]>();
+  const [index, setIndex] = useState(0);
   const params: { groupId: string } = useParams();
   const groupId = params.groupId;
 
@@ -93,22 +94,25 @@ const GroupContainer: React.FC = () => {
 
   useEffect(() => {
     fetchGroupDetails();
-    fetchTransactions();
+    fetchTransactions(index);
   }, []);
 
-  const fetchTransactions: () => Promise<void> = async () => {
+  const fetchTransactions: (index: number) => Promise<void> = async (index: number) => {
     const { data } = await axios({
       method: "get",
-      url: `http://localhost:3001/transactions/groups/${groupId}`,
+      url: `http://localhost:3001/transactions/groups/${groupId}/${index}`,
       // data: {user: currentUser}
     });
     const transactions: TransactionResponseItem[] = data.transactions;
-    const transactions3 = transactions.slice(0, 3); // to make it easier for the server we sliced the r esponse
-    transactions3.forEach((transaction) => {
+    // const transactions3 = transactions.slice(0, 3); // to make it easier for the server we sliced the r esponse
+    transactions.forEach((transaction) => {
       transaction.likes = [];
       transaction.comments = [];
     });
-    setAllTransactions(transactions3);
+    if (transactions.length > 0) {
+      setIndex(index);
+    }
+    setAllTransactions(transactions);
   };
 
   const fetchGroupDetails: () => Promise<void> = async () => {
@@ -138,6 +142,8 @@ const GroupContainer: React.FC = () => {
         allTransactions.map((transaction, i) => {
           return <TransactionItem key={i} transaction={transaction} />;
         })}
+      <button onClick={() => (index !== 0 ? fetchTransactions(index - 1) : "")}>back</button>
+      <button onClick={() => fetchTransactions(index + 1)}>next</button>
     </div>
   );
 };

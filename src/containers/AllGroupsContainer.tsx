@@ -160,7 +160,6 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
   }, []);
 
   const fetchGroups: (index: number) => Promise<void> = async (index: number) => {
-    console.log(index);
     const { data } = await axios({
       method: "get",
       url: `http://localhost:3001/groups/user/${currentUser?.id}/${index}`,
@@ -170,7 +169,6 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
     if (groups.length > 0) {
       setIndex(index);
     }
-    console.log(groups);
     setAllGroups(groups);
   };
 
