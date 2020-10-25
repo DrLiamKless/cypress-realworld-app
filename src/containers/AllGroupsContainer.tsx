@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useMachine, useService } from "@xstate/react";
 import { Link } from "react-router-dom";
-import { GroupResponseItem, User } from "../models";
+import { Group, GroupResponseItem, User } from "../models";
 import { transactionFiltersMachine } from "../machines/transactionFiltersMachine";
 import GroupContainer from "../containers/GroupContainer";
 import styled from "styled-components";
@@ -30,7 +30,7 @@ export interface Props {
 type GroupDetailsForNewGroup = {
   groupName: string;
   avatar: string;
-  groupMembersIds: string[];
+  groupMembersIds: string;
 };
 
 //material-UI:
@@ -131,21 +131,23 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
 
   const [authState] = useService(authService);
   const [personName, setPersonName] = useState<string[]>([]);
-  const [friends, setFriends] = useState([]);
-  const [allGroups, setAllGroups] = useState([]);
+  const [friends, setFriends] = useState<User[]>([]);
+  const [allGroups, setAllGroups] = useState<GroupResponseItem[]>([]);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const { register, handleSubmit, errors } = useForm<GroupDetailsForNewGroup>();
 
   const currentUser = authState?.context?.user;
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setPersonName(event.target.value as string[]);
+    setPersonName(event.target.value as string[]);  
   };
 
   useEffect(() => {
     fetchGroups();
     fetchAllUsers();
   }, []);
+
+
 
   const fetchGroups: () => Promise<void> = async () => {
     const { data } = await axios({
@@ -163,14 +165,14 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
       url: `http://localhost:3001/users/friends/${currentUser?.id}`,
     });
     const allUsers = data.results;
-    console.log(data);
     setFriends(allUsers);
   };
 
   const onSubmit = (data: GroupDetailsForNewGroup) => {
-    console.log("data ", data);
+    // data.groupMembersIds = data.groupMembersIds.split(',') ;
     axios.post("http://localhost:3001/groups", data);
     closeNewGroupModal();
+    setPersonName([]);
   };
 
   const openNewGroupModal: () => void = () => {
@@ -214,38 +216,43 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
               id="groupAvatarUrl"
               inputRef={register({ required: true })}
             />
+            <TextField style={{display:"none"}} name="groupMembersIds" value={personName} inputRef={register({required:true})}/>
             {errors.avatar && errors.avatar.type === "required" && (
               <div>You must enter an avatr</div>
             )}
-            <label htmlFor="groupMembersIds">Choose group members:</label>
-            <Select
+            <label htmlFor="groupMembersIdss">Choose group members:</label>
+          <Select
+              fullWidth
               labelId="demo-mutiple-chip-label"
               id="contacts"
               type="text"
-              name="groupMembersIds"
+              name="groupMembersIdss"
               multiple
               value={personName}
               onChange={handleChange}
-              input={<Input id="select-multiple-chip" />}
+              input={<Input type="text" id="select-multiple-chip"></Input>}
+              MenuProps={MenuProps}
+              inputRef={register({ required: true })}
               renderValue={(selected) => (
-                <div className={classes.chips}>
-                  {(selected as string[]).map((value) => (
-                    <Chip key={value} label={value} className={classes.chip} />
+                <div className={classes.chips} > 
+                  {(selected as User[]).map((value) => (
+                    <Chip key={value.id} label={value.firstName} className={classes.chip} />
                   ))}
                 </div>
               )}
-              MenuProps={MenuProps}
-              inputRef={register({ required: true })}
             >
               {friends?.map((friend) => (
-                <MenuItem key={friend} value={friend} style={getStyles(friend, personName, theme)}>
-                  {friend}
+                <MenuItem key={friend.id} ref={register} 
+                  value={friend.id} style={getStyles(friend.firstName, personName, theme)}
+                >
+                  {`${friend.firstName} ${friend.lastName}`}
                 </MenuItem>
               ))}
-            </Select>
-            {/* {errors.groupMembersIds && errors.groupMembersIds.type === "required" && (
+          </Select>
+            
+            {errors.groupMembersIds && errors.groupMembersIds.type === "required" && (
               <div>You must choose at least one group member</div>
-            )} */}
+            )}
             <Button type="submit" name="submit">
               Create
             </Button>
