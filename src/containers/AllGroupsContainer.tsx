@@ -8,6 +8,7 @@ import styled from "styled-components";
 import axios from "axios";
 import { Interpreter } from "xstate";
 import { AuthMachineContext, AuthMachineEvents } from "../machines/authMachine";
+import {Button ,TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from '@material-ui/core';
 
 export interface Props {
   authService: Interpreter<AuthMachineContext, any, AuthMachineEvents, any>;
@@ -124,11 +125,6 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
     setAllGroups(groups);
   };
 
-  const handleGroupCardClick = () => {
-    // console.log(groupId);
-    setBool(!bool);
-  };
-
   const openNewGroupModal: () => void = () => {
     setModalOpen(true);
   };
@@ -177,7 +173,34 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
     //   </Route>
     // </Switch>
     <>
-      {modalOpen ? alert("open") : null}
+      {/* {modalOpen ? alert("open") : null} */}
+      <Dialog open={modalOpen} onClose={closeNewGroupModal}>
+        <DialogTitle>Create New Group</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            To create new group, please enter your group name and image.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="group name"
+            type="name"
+            fullWidth
+          />
+          <TextField
+            margin="dense"
+            id="avatar"
+            label="group image"
+            type="url"
+            fullWidth
+          />
+          <Button 
+            type="submit">
+          Create
+          </Button>
+        </DialogContent>
+      </Dialog>
       <NewGroupButton onClick={openNewGroupModal}>New Group</NewGroupButton>
       <h1>Groups</h1>
       {bool && <GroupContainer />}
@@ -186,9 +209,6 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
           return (
             <Link to={`/groups/${group.id}`}>
               <GroupCard
-                onClick={() => {
-                  handleGroupCardClick();
-                }}
                 key={i}
               >
                 <GroupCardImg src={group.avatar} />
