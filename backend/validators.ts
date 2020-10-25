@@ -124,6 +124,7 @@ export const isGroupValidator = [
   body("groupName").isString().trim(),
   body("avatar").isString().trim(),
   body("groupMembersIds").optional().isArray(),
+  body("creatorId").isString().trim(),
 ];
 
 export const isNewGroupMembersValidator = [body("newGroupMembersIds").isArray()];

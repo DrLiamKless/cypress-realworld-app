@@ -10,6 +10,8 @@ import {
 import axios from "axios";
 import styled from "styled-components";
 import GroupBackButton from "components/GroupBackButton";
+import { useService } from "@xstate/react";
+import { authService } from "machines/authMachine";
 
 const exampleTransactions: TransactionResponseItem[] = [
   {
@@ -80,17 +82,14 @@ const exampleTransactions: TransactionResponseItem[] = [
   },
 ];
 
-// const InformationBar = styled.div`
-//   width: 100%;
-//   height: 15vh;
-//   background-color: red;
-// `;
-
 const GroupContainer: React.FC = () => {
+  const [authState] = useService(authService);
   const [groupDetails, setGroupDetails] = useState<GroupResponseItem>();
   const [allTransactions, setAllTransactions] = useState<TransactionResponseItem[]>();
   const params: { groupId: string } = useParams();
   const groupId = params.groupId;
+
+  const currentUser = authState?.context?.user;
 
   useEffect(() => {
     fetchGroupDetails();
@@ -129,6 +128,12 @@ const GroupContainer: React.FC = () => {
       </InformationBar> */}
       <GroupBackButton />
       <h1>{groupDetails?.groupName}</h1>
+      <h3>
+        Members:{" "}
+        {groupDetails?.members
+          .map((member) => (member[1] === currentUser?.username ? "You" : member[1]))
+          .join(", ")}
+      </h3>
       {allTransactions &&
         allTransactions.map((transaction, i) => {
           return <TransactionItem key={i} transaction={transaction} />;
