@@ -76,6 +76,7 @@
     "passport-local": "1.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "react-hook-form": "^6.9.6",
     "react-infinite-calendar": "2.3.1",
     "react-number-format": "4.4.1",
     "react-router": "5.2.0",

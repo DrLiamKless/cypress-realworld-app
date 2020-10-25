@@ -29,6 +29,11 @@ router.get("/", ensureAuthenticated, (req, res) => {
   res.status(200).json({ results: users });
 });
 
+router.get("/friends/:userId", (req, res) => {
+  const users = removeUserFromResults(req.params.userId, getAllUsers());
+  res.status(200).json({ results: users });
+});
+
 router.get("/search", ensureAuthenticated, validateMiddleware([searchValidation]), (req, res) => {
   const { q } = req.query;
 
