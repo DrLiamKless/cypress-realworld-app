@@ -142,6 +142,7 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
 
   const [authState] = useService(authService);
   const [allGroups, setAllGroups] = useState([]);
+  const [index, setIndex] = useState(0);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [personName, setPersonName] = useState<string[]>([]);
   const [friends, setFriends] = useState<User[]>();
@@ -154,17 +155,22 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
   };
 
   useEffect(() => {
-    fetchGroups();
+    fetchGroups(index);
     fetchAllUsers();
   }, []);
 
-  const fetchGroups: () => Promise<void> = async () => {
+  const fetchGroups: (index: number) => Promise<void> = async (index: number) => {
+    console.log(index);
     const { data } = await axios({
       method: "get",
-      url: `http://localhost:3001/groups/user/${currentUser?.id}`,
+      url: `http://localhost:3001/groups/user/${currentUser?.id}/${index}`,
       // data: {user: currentUser}
     });
     const groups = data.results;
+    if (groups.length > 0) {
+      setIndex(index);
+    }
+    console.log(groups);
     setAllGroups(groups);
   };
 
@@ -313,6 +319,7 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
           );
         })}
       </div>
+      <button onClick={() => fetchGroups(index + 1)}>next</button>
     </>
   );
 };

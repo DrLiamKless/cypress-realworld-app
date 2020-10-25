@@ -453,9 +453,20 @@ export const getGroupsForUser = (userId: string): Group[] =>
     )
   );
 
-export const getGroupsForUserForApi = (userId: string): GroupResponseItem[] =>
+export const getGroupsForUserForApi = (userId: string, index: number): GroupResponseItem[] =>
   flow(
     getGroupsForUser,
+    (groups) => {
+      let i,
+        chunk = 2;
+      let temparray = [];
+      let j;
+      for (i = 0, j = groups.length; i < j; i += chunk) {
+        temparray.push(groups.slice(i, i + chunk));
+      }
+      console.log("temparray", temparray[index].length);
+      return temparray[index];
+    },
     filter((group) => !group.hasOwnProperty("isDeleted")),
     formatGroupsForApiResponse
   )(userId);
