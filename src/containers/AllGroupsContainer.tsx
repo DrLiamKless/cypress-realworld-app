@@ -319,6 +319,7 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
           );
         })}
       </div>
+      <button onClick={() => (index !== 0 ? fetchGroups(index - 1) : "")}>back</button>
       <button onClick={() => fetchGroups(index + 1)}>next</button>
     </>
   );
