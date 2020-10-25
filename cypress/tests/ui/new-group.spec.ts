@@ -74,6 +74,6 @@ describe("New group", () => {
     cy.get(".MuiDialog-container").should("exist");
     cy.get("form > :nth-child(3)").should("contain", "You must enter a group name");
     cy.get("form > :nth-child(7)").should("contain", "You must enter an avatar");
-    cy.get("form > :nth-child(10)").should("contain", "You must choose at least one group member");
+    cy.get("form > :nth-child(12)").should("contain", "You must choose at least one group member");
   });
 });

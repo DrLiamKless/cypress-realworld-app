@@ -179,7 +179,6 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
 
   const onSubmit = (data: GroupDetailsForNewGroup) => {
     // data.groupMembersIds = data.groupMembersIds.split(',') ;
-    console.log(data);
     const body: NewGroupRequest = {
       groupName: data.groupName,
       avatar: data.avatar,
@@ -240,13 +239,22 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
             {errors.avatar && errors.avatar.type === "required" && (
               <ErrorMsg>You must enter an avatar</ErrorMsg>
             )}
-            <label htmlFor="groupMembersIdss">Choose group members:</label>
+            <TextField
+              style={{ display: "none" }}
+              name="groupMembersIds"
+              value={personName}
+              inputRef={register({ required: true })}
+            />
+            {errors.avatar && errors.avatar.type === "required" && (
+              <div>You must enter an avatr</div>
+            )}
+            <label htmlFor="groupMembersIds">Choose group members:</label>
             <Select
               fullWidth
               labelId="demo-mutiple-chip-label"
               id="contacts"
               type="text"
-              name="groupMembersIdss"
+              name="groupMembersIds"
               multiple
               value={personName}
               onChange={handleChange}
