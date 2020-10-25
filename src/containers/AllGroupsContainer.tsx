@@ -149,6 +149,7 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
   const { register, handleSubmit, errors } = useForm<GroupDetailsForNewGroup>();
 
   const currentUser = authState?.context?.user;
+  const { pageData, results } = current.context;
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setPersonName(event.target.value as string[]);
@@ -194,9 +195,13 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
   const openNewGroupModal: () => void = () => {
     setModalOpen(true);
   };
+
   const closeNewGroupModal: () => void = () => {
     setModalOpen(false);
   };
+
+  const loadNextPage = (page: number) =>
+    send("FETCH", { page, ...dateRangeFilters, ...amountRangeFilters });
 
   return (
     <>
@@ -296,7 +301,11 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
       </NewGroupButton>
       <h1>Groups</h1>
       <div id="all-groups-container">
-        <GroupInfinteList groups={allGroups} />
+        <GroupInfinteList
+          groups={allGroups}
+          pagination={pageData as TransactionPagination}
+          loadNextPage={loadNextPage}
+        />
         {/* {allGroups.map((group: GroupResponseItem, i: number) => {
           return (
             <Link to={`/groups/${group.id}`}>
