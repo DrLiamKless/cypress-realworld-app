@@ -24,6 +24,7 @@ import {
 import { createStyles, makeStyles, useTheme, Theme } from "@material-ui/core/styles";
 import { useForm } from "react-hook-form";
 import { string } from "yup";
+import GroupInfinteList from "../components/GroupInfinteList";
 export interface Props {
   authService: Interpreter<AuthMachineContext, any, AuthMachineEvents, any>;
 }
@@ -295,7 +296,8 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
       </NewGroupButton>
       <h1>Groups</h1>
       <div id="all-groups-container">
-        {allGroups.map((group: GroupResponseItem, i: number) => {
+        <GroupInfinteList groups={allGroups} />
+        {/* {allGroups.map((group: GroupResponseItem, i: number) => {
           return (
             <Link to={`/groups/${group.id}`}>
               <GroupCard key={i}>
@@ -311,7 +313,7 @@ const AllGroupsContainer: React.FC<Props> = ({ authService }) => {
               </GroupCard>
             </Link>
           );
-        })}
+        })} */}
       </div>
     </>
   );

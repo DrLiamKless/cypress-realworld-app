@@ -16,3 +16,10 @@ export interface GroupResponseItem extends Group {
 
 export type GroupDetails = Omit<Group, "id" | "creatorId" | "uuid" | "createdAt" | "modifiedAt">;
 // *to-add - total amount,
+
+export type GroupPagination = {
+  page: number;
+  limit: number;
+  hasNextPages: boolean;
+  totalPages: number;
+};
