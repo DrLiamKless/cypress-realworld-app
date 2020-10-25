@@ -21,6 +21,7 @@ describe("Contacts API", function () {
     });
 
     cy.database("find", "contacts").then((contact: Contact) => {
+      console.log(contact)
       ctx.contact = contact;
     });
   });
